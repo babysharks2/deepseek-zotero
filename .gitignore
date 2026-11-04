@@ -1,0 +1,7 @@
+.test-data/
+.test-profile/
+.ref/
+*.log
+screen.png
+shot*.png
+crop*.png
