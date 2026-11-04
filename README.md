@@ -19,7 +19,7 @@
 
 ## 安装
 
-1. 下载 Releases 里的 `zor.xpi`
+1. 下载 [Releases](https://github.com/babysharks2/deepseek-zotero/releases/latest) 里的 `zor.xpi`
 2. Zotero →「工具 → 插件」→ 右上角齿轮 → **Install Plugin From File…**
 3. 选择 `zor.xpi`，重启 Zotero
 
