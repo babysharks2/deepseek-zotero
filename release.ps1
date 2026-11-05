@@ -87,8 +87,11 @@ catch {
     body             = if ($Notes) { $Notes } else { "Zor $Version" }
     draft            = $false
     prerelease       = $false
-  } | ConvertTo-Json
-  $release = Invoke-RestMethod -Uri "$api/releases" -Headers $headers -Method Post -Body $body -ContentType "application/json"
+  } | ConvertTo-Json -Depth 5
+  # PowerShell 5.1 encodes a string body as ISO-8859-1, which turns Chinese into
+  # '?'. Send raw UTF-8 bytes instead.
+  $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+  $release = Invoke-RestMethod -Uri "$api/releases" -Headers $headers -Method Post -Body $bodyBytes -ContentType "application/json; charset=utf-8"
 }
 
 $assets = Invoke-RestMethod -Uri "$api/releases/$($release.id)/assets" -Headers $headers -Method Get
