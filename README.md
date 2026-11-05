@@ -1,5 +1,7 @@
 # Zor — Zotero 右侧 DeepSeek 侧栏
 
+[**⬇ 下载 zor.xpi**](https://github.com/babysharks2/deepseek-zotero/releases/latest) · [安装说明](#安装) · [更新日志](CHANGELOG.md)
+
 把 DeepSeek 对话固定在 Zotero 窗口右侧，像 VSCode 里的 AI 侧栏一样常驻。
 相比 zotero-gpt 之类，重点解决三件事：**对话历史持久化**、**PDF 划词/全文直接提问**、**固定在窗口边缘不遮挡**。
 
