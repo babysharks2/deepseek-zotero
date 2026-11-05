@@ -25,6 +25,14 @@
 
 要求 Zotero 7 及以上（在 Zotero 10.0.7 上开发与测试）。
 
+## 自动更新
+
+插件安装后会自动检查新版本：
+
+- 更新清单：`https://gcore.jsdelivr.net/gh/babysharks2/deepseek-zotero@main/updates.json`
+- 发布新版本后，Zotero「工具 → 插件」里会出现更新按钮，点一下就升级
+- 也可以随时从 [Releases](https://github.com/babysharks2/deepseek-zotero/releases/latest) 手动下载最新 `zor.xpi`
+
 ## 配置
 
 打开侧栏「设置」：
@@ -79,11 +87,25 @@ node test/run-tests.js
 
 离线验证会话存储与恢复、损坏文件兜底、选中文献上下文拼装、消息构造、接口地址规范化、模型参数处理。
 
+### 发版
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\release.ps1 -Version 1.3.7 -Notes "这一版改了什么"
+```
+
+脚本会依次：改版本号 → 打包 → 提交 → 打 tag → 推送 → 创建 GitHub Release → 上传 `zor.xpi` → 刷新 jsDelivr 缓存。
+
+发版前请确认：
+
+- 当前分支是 `main`（脚本会检查）
+- 目标版本号高于上一版，且 tag 不存在
+- 本机 `git push` 已认证过（脚本复用 git 缓存的 GitHub 凭据）
+
 ## 目录
 
 ```
 src/
-  manifest.json     插件清单
+  manifest.json     插件清单（含 update_url）
   bootstrap.js      Zotero 插件生命周期入口
   prefs.js          默认设置
   zor.js            侧栏 UI 与交互
@@ -91,8 +113,10 @@ src/
   zor-api.js        DeepSeek 流式请求
   zor-store.js      对话持久化
   zor-context.js    选中文献 / PDF 选中 / 拖入文件上下文
+updates.json        自动更新清单
 test/run-tests.js   离线测试
 build.ps1           打包成 dist/zor.xpi
+release.ps1         一键发版
 ```
 
 ## 已知限制

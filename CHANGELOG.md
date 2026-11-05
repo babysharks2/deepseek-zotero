@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.6 — 2026-11-05
+
+- 支持自动更新：`update_url` 指向 jsDelivr 上的 `updates.json`
+- 新增 `updates.json` 更新清单
+- 新增 `release.ps1` 一键发版：改版本、打包、提交、打 tag、推送、创建 Release、上传 xpi、刷新 CDN
+- README 补充自动更新与发版说明
+
 ## 1.3.5 — 2026-11-04
 
 - 修复：插件卸载后悬浮 `Z` 按钮残留
