@@ -1,5 +1,5 @@
 # Zor — Zotero 右侧 DeepSeek 侧栏
-
+<img width="1910" height="966" alt="image" src="https://github.com/user-attachments/assets/24251c2f-5f3c-4964-a452-2ce098168ca6" />
 [**⬇ 下载 zor.xpi**](https://github.com/babysharks2/deepseek-zotero/releases/latest) · [安装说明](#安装) · [更新日志](CHANGELOG.md)
 
 把 DeepSeek 对话固定在 Zotero 窗口右侧，像 VSCode 里的 AI 侧栏一样常驻。
