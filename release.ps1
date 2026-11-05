@@ -29,16 +29,22 @@ if ($existingTag) {
 }
 
 # 1. Bump the version in manifest.json and updates.json.
+# IMPORTANT: write UTF-8 without BOM. Zotero's JSON parser rejects a BOM, and
+# PowerShell 5.1's Set-Content -Encoding UTF8 always adds one.
+function Write-Utf8NoBom([string]$path, [string]$text) {
+  [IO.File]::WriteAllText($path, $text, (New-Object System.Text.UTF8Encoding($false)))
+}
+
 $manifestPath = Join-Path $root "src\manifest.json"
 $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
 $manifest.version = $Version
-$manifest | ConvertTo-Json -Depth 8 | Set-Content $manifestPath -Encoding UTF8
+Write-Utf8NoBom $manifestPath ($manifest | ConvertTo-Json -Depth 8)
 
 $updatesPath = Join-Path $root "updates.json"
 $updates = Get-Content $updatesPath -Raw | ConvertFrom-Json
 $updates.addons.'zor@deepseek.local'.updates[0].version = $Version
 $updates.addons.'zor@deepseek.local'.updates[0].update_link = "https://github.com/$repo/releases/download/$tag/zor.xpi"
-$updates | ConvertTo-Json -Depth 10 | Set-Content $updatesPath -Encoding UTF8
+Write-Utf8NoBom $updatesPath ($updates | ConvertTo-Json -Depth 10)
 
 # 2. Build the xpi.
 & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root "build.ps1")
