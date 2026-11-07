@@ -34,7 +34,7 @@
 
 插件安装后会自动检查新版本：
 
-- 更新清单：`https://gcore.jsdelivr.net/gh/babysharks2/deepseek-zotero@main/updates.json`
+- 更新清单：`https://babysharks2.github.io/deepseek-zotero/updates.json`（GitHub Pages，发版后几分钟内生效）
 - 发布新版本后，Zotero「工具 → 插件」里会出现更新按钮，点一下就升级
 - 也可以随时从 [Releases](https://github.com/babysharks2/deepseek-zotero/releases/latest) 手动下载最新 `zor.xpi`
 

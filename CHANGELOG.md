@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.3 — 2026-11-08
+
+- 自动更新清单改用 GitHub Pages：`https://babysharks2.github.io/deepseek-zotero/updates.json`
+- 发版后几分钟内生效，不再有 jsDelivr 的 12 小时缓存延迟
+
 ## 1.4.2 — 2026-11-08
 
 - 修复对话内容无法选中 / 复制：显式允许侧栏与消息文本选择
