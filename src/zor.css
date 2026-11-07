@@ -281,6 +281,33 @@
   white-space: pre-wrap;
 }
 
+/* ---------------------------------------------------------------- tables */
+
+.zor-table-wrap {
+  margin: 8px 0;
+  overflow-x: auto;
+}
+
+.zor-table {
+  border-collapse: collapse;
+  font-size: 12.5px;
+  min-width: 100%;
+}
+
+.zor-table th,
+.zor-table td {
+  border: 1px solid var(--material-border, #ddd);
+  padding: 4px 8px;
+  vertical-align: top;
+  text-align: start;
+}
+
+.zor-table th {
+  background: var(--fill-quinary, rgba(0, 0, 0, 0.06));
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .zor-msg-body .katex {
   font-size: 1.03em;
 }

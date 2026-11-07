@@ -1278,6 +1278,16 @@ var Zor = {
         continue;
       }
 
+      // GitHub-style pipe table: current line has pipes and the next line is a
+      // separator row like |---|---| or |:--|--:|
+      if (/\|/.test(line) && index + 1 < lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(lines[index + 1])) {
+        const table = this._renderTable(ctx, lines, index, math);
+        frag.appendChild(table.node);
+        index = table.nextIndex;
+        flushList();
+        continue;
+      }
+
       const heading = line.match(/^(#{1,4})\s+(.*)$/);
       if (heading) {
         const level = Math.min(heading[1].length + 2, 6);
@@ -1331,6 +1341,71 @@ var Zor = {
       flushList();
     }
     return frag;
+  },
+
+  _renderTable(ctx, lines, start, math) {
+    const doc = ctx.doc;
+    const parseRow = (line) => {
+      let value = line.trim();
+      if (value.startsWith("|")) {
+        value = value.slice(1);
+      }
+      if (value.endsWith("|")) {
+        value = value.slice(0, -1);
+      }
+      return value.split("|").map(cell => cell.trim());
+    };
+
+    const header = parseRow(lines[start]);
+    const separator = parseRow(lines[start + 1]);
+    const aligns = separator.map((cell) => {
+      const left = cell.startsWith(":");
+      const right = cell.endsWith(":");
+      if (left && right) {
+        return "center";
+      }
+      return right ? "right" : "left";
+    });
+
+    const rows = [];
+    let index = start + 2;
+    while (index < lines.length && /^\s*\|/.test(lines[index])) {
+      rows.push(parseRow(lines[index]));
+      index++;
+    }
+
+    const wrap = this._el(doc, "div", { class: "zor-table-wrap" });
+    const table = this._el(doc, "table", { class: "zor-table" });
+
+    const thead = this._el(doc, "thead");
+    const headRow = this._el(doc, "tr");
+    header.forEach((text, col) => {
+      const th = this._el(doc, "th");
+      if (aligns[col] && aligns[col] !== "left") {
+        th.style.textAlign = aligns[col];
+      }
+      this._appendInline(ctx, th, text, math);
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = this._el(doc, "tbody");
+    for (const row of rows) {
+      const tr = this._el(doc, "tr");
+      for (let col = 0; col < header.length; col++) {
+        const td = this._el(doc, "td");
+        if (aligns[col] && aligns[col] !== "left") {
+          td.style.textAlign = aligns[col];
+        }
+        this._appendInline(ctx, td, row[col] || "", math);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    return { node: wrap, nextIndex: index };
   },
 
   _appendInline(ctx, parent, text, math) {
