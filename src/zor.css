@@ -262,6 +262,29 @@
   text-decoration: underline;
 }
 
+/* ---------------------------------------------------------------- math */
+
+.zor-math-display {
+  display: block;
+  margin: 8px 0;
+  text-align: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.zor-math-fallback {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--fill-quinary, rgba(0, 0, 0, 0.06));
+  white-space: pre-wrap;
+}
+
+.zor-msg-body .katex {
+  font-size: 1.03em;
+}
+
 .zor-reasoning {
   align-self: stretch;
   margin-bottom: 6px;

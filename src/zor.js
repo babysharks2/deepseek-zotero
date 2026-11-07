@@ -177,8 +177,34 @@ var Zor = {
     doc.documentElement.appendChild(link);
   },
 
+  /**
+   * Load KaTeX into the window scope (renderToString needs a document) and add
+   * its stylesheet. Fonts are bundled under vendor/fonts and resolved relative
+   * to the CSS file, which works inside the XPI jar.
+   */
+  _ensureKatex(win, doc) {
+    if (!win.__zorKatexLoaded) {
+      try {
+        Services.scriptloader.loadSubScript(this.rootURI + "vendor/katex.min.js", win);
+        win.__zorKatexLoaded = true;
+      }
+      catch (e) {
+        Zotero.logError(e);
+      }
+    }
+    if (!doc.getElementById("zor-katex-css")) {
+      const link = doc.createElementNS(this.XHTML, "link");
+      link.id = "zor-katex-css";
+      link.setAttribute("rel", "stylesheet");
+      link.setAttribute("type", "text/css");
+      link.setAttribute("href", this.rootURI + "vendor/katex.min.css");
+      doc.documentElement.appendChild(link);
+    }
+  },
+
   _inject(win, doc, container, before) {
     this._linkStylesheet(doc);
+    this._ensureKatex(win, doc);
 
     const sidebar = doc.createElementNS(this.XHTML, "div");
     sidebar.id = "zor-sidebar";
@@ -1217,7 +1243,8 @@ var Zor = {
   _renderMarkdown(ctx, text) {
     const doc = ctx.doc;
     const frag = doc.createDocumentFragment();
-    const source = String(text).replace(/\r\n/g, "\n");
+    const math = [];
+    const source = this._extractMath(String(text).replace(/\r\n/g, "\n"), math);
     const lines = source.split("\n");
     let index = 0;
     let listEl = null;
@@ -1255,7 +1282,7 @@ var Zor = {
       if (heading) {
         const level = Math.min(heading[1].length + 2, 6);
         const node = this._el(doc, "h" + level);
-        this._appendInline(ctx, node, heading[2]);
+        this._appendInline(ctx, node, heading[2], math);
         frag.appendChild(node);
         flushList();
         index++;
@@ -1271,7 +1298,7 @@ var Zor = {
           frag.appendChild(listEl);
         }
         const item = this._el(doc, "li");
-        this._appendInline(ctx, item, listItem[2]);
+        this._appendInline(ctx, item, listItem[2], math);
         listEl.appendChild(item);
         index++;
         continue;
@@ -1279,7 +1306,7 @@ var Zor = {
 
       if (/^>\s?/.test(line)) {
         const quote = this._el(doc, "blockquote", { class: "zor-quote" });
-        this._appendInline(ctx, quote, line.replace(/^>\s?/, ""));
+        this._appendInline(ctx, quote, line.replace(/^>\s?/, ""), math);
         frag.appendChild(quote);
         flushList();
         index++;
@@ -1299,16 +1326,16 @@ var Zor = {
         index++;
       }
       const paragraph = this._el(doc, "p");
-      this._appendInline(ctx, paragraph, buffer.join("\n"));
+      this._appendInline(ctx, paragraph, buffer.join("\n"), math);
       frag.appendChild(paragraph);
       flushList();
     }
     return frag;
   },
 
-  _appendInline(ctx, parent, text) {
+  _appendInline(ctx, parent, text, math) {
     const doc = ctx.doc;
-    const pattern = /(\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`|\[[^\]]+\]\([^)\s]+\)|https?:\/\/[^\s<]+)/g;
+    const pattern = /(\uFFF0\d+\uFFF1|\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`|\[[^\]]+\]\([^)\s]+\)|https?:\/\/[^\s<]+)/g;
     let last = 0;
     let match;
     const pushText = (value) => {
@@ -1331,7 +1358,10 @@ var Zor = {
       last = match.index + match[0].length;
       const token = match[0];
 
-      if (token.startsWith("**")) {
+      if (/^\uFFF0\d+\uFFF1$/.test(token)) {
+        parent.appendChild(this._mathNode(ctx, math[parseInt(token.slice(1, -1), 10)]));
+      }
+      else if (token.startsWith("**")) {
         const strong = this._el(doc, "strong");
         strong.textContent = token.slice(2, -2);
         parent.appendChild(strong);
@@ -1360,6 +1390,57 @@ var Zor = {
       }
     }
     pushText(text.slice(last));
+  },
+
+  /**
+   * Replace $$...$$ and $...$ with private-use placeholders and remember the
+   * LaTeX source. The placeholders survive Markdown parsing and are turned into
+   * KaTeX nodes in _appendInline.
+   */
+  _extractMath(text, math) {
+    let out = String(text);
+    out = out.replace(/\$\$([\s\S]+?)\$\$/g, (match, latex) => {
+      const id = "\uFFF0" + math.length + "\uFFF1";
+      math.push({ latex: latex.trim(), display: true });
+      return id;
+    });
+    out = out.replace(/(^|[^\\$])\$([^\$\n]+?)\$/g, (match, prefix, latex) => {
+      const id = "\uFFF0" + math.length + "\uFFF1";
+      math.push({ latex: latex.trim(), display: false });
+      return prefix + id;
+    });
+    return out;
+  },
+
+  _mathNode(ctx, item) {
+    if (!item) {
+      return ctx.doc.createTextNode("");
+    }
+    const span = this._el(ctx.doc, "span", {
+      class: "zor-math" + (item.display ? " zor-math-display" : "")
+    });
+    const katex = ctx.win.katex;
+    if (katex && typeof katex.renderToString === "function") {
+      try {
+        // The sidebar lives in a XUL document, where createElement() yields XUL
+        // elements. Render to an HTML string and let the HTML span parse it, so
+        // the generated markup uses the HTML namespace.
+        const html = katex.renderToString(item.latex, {
+          displayMode: !!item.display,
+          throwOnError: false,
+          output: "html",
+          strict: false
+        });
+        span.innerHTML = html;
+        return span;
+      }
+      catch (e) {
+        Zotero.logError(e);
+      }
+    }
+    span.classList.add("zor-math-fallback");
+    span.textContent = (item.display ? "$$ " : "$") + item.latex + (item.display ? " $$" : "$");
+    return span;
   },
 
   _link(ctx, label, href) {
