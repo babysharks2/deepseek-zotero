@@ -153,6 +153,38 @@
   scrollbar-color: var(--color-scrollbar, rgba(0, 0, 0, 0.25)) transparent;
 }
 
+/* XUL chrome windows default to non-selectable content; opt back in so users
+   can drag-select and Ctrl+C the conversation. */
+#zor-sidebar,
+#zor-root,
+.zor-msg,
+.zor-msg-body,
+.zor-msg-body *,
+.zor-reasoning-body {
+  -moz-user-select: text;
+  user-select: text;
+}
+
+.zor-msg-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.zor-copy {
+  border: 0;
+  background: none;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  opacity: 0.45;
+}
+
+.zor-copy:hover {
+  opacity: 1;
+  background: var(--fill-quinary, rgba(0, 0, 0, 0.06));
+}
+
 .zor-msg {
   display: flex;
   flex-direction: column;

@@ -3,8 +3,8 @@
                    "zor@deepseek.local":  {
                                               "updates":  [
                                                               {
-                                                                  "version":  "1.4.1",
-                                                                  "update_link":  "https://github.com/babysharks2/deepseek-zotero/releases/download/v1.4.1/zor.xpi",
+                                                                  "version":  "1.4.2",
+                                                                  "update_link":  "https://github.com/babysharks2/deepseek-zotero/releases/download/v1.4.2/zor.xpi",
                                                                   "applications":  {
                                                                                        "zotero":  {
                                                                                                       "strict_min_version":  "7.0",

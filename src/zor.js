@@ -1175,7 +1175,45 @@ var Zor = {
     if (!isUser && message.error) {
       node.appendChild(this._el(doc, "div", { class: "zor-error", text: message.error }));
     }
+
+    if (message.content) {
+      const actions = this._el(doc, "div", { class: "zor-msg-actions" });
+      const copy = this._el(doc, "button", { class: "zor-copy", title: "复制这条内容", text: "复制" });
+      copy.addEventListener("click", (event) => {
+        event.preventDefault();
+        this._copyText(ctx, message.content);
+      });
+      actions.appendChild(copy);
+      node.appendChild(actions);
+    }
     return node;
+  },
+
+  _copyText(ctx, text) {
+    try {
+      const helper = Components.classes["@mozilla.org/widget/clipboardhelper;1"]
+        .getService(Components.interfaces.nsIClipboardHelper);
+      helper.copyString(text);
+      this._setStatus(ctx, "已复制");
+      setTimeout(() => {
+        try {
+          this._setStatus(ctx, "");
+        }
+        catch (e) {}
+      }, 1500);
+      return;
+    }
+    catch (e) {
+      Zotero.logError(e);
+    }
+    try {
+      ctx.win.navigator.clipboard.writeText(text);
+      this._setStatus(ctx, "已复制");
+    }
+    catch (e) {
+      Zotero.logError(e);
+      this._setStatus(ctx, "复制失败");
+    }
   },
 
   renderHistory(ctx) {
